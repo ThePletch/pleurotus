@@ -1,10 +1,15 @@
-from typing import Callable, Generic
+from typing import Callable, Generic, TypeVar
+# from typing import Generic, Literal, Protocol, runtime_checkable, TypedDict, TypeVar
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 
-from types import MonodirectionalControllerConfig, UnitMeasure
+from controller_types import Mathable, MonodirectionalControllerConfig
+
+# Necessary to redefine here for some reason - mypy doesn't understand the bound if you reuse it from
+# the other file.
+UnitMeasure = TypeVar('UnitMeasure', bound=Mathable)
 
 
 @dataclass
@@ -65,3 +70,20 @@ class HumidityController(MonodirectionalController[float]):
 
 class CO2Controller(MonodirectionalController[float]):
     measure_name = "CO2 PPM"
+
+
+class HumidityGatedCO2Controller(CO2Controller):
+    """
+    CO2 controller that only turns on the exhaust when the humidifier is off.
+
+    This avoids fog being exhausted from the chamber before it's able to evaporate into the air and increase humidity levels.
+    """
+    humidity_controller: HumidityController
+
+    def should_be_active(self, value: float) -> bool:
+        base_active_state = super().should_be_active(value)
+        if not self.humidity_controller.should_be_active(self.humidity_controller.reader()):
+            return base_active_state
+        elif base_active_state:
+            logging.debug("Exhaust is waiting to activate due to high CO2 levels, but is disabled while the humidifier runs.")
+        return False

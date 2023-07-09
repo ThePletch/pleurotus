@@ -1,4 +1,4 @@
-from typing import Generic, Literal, Protocol, runtime_checkable, Self, TypedDict, TypeVar
+from typing import Generic, Literal, Protocol, runtime_checkable, TypedDict, TypeVar
 
 from abc import abstractmethod
 
@@ -11,13 +11,16 @@ class Mathable(Protocol):
     """
 
     @abstractmethod
-    def __lt__(self: Self, other: int | float) -> bool: ...
+    def __lt__(self: 'UnitMeasure', other: 'UnitMeasure') -> bool: ...
 
     @abstractmethod
-    def __add__(self: Self, other: int | float) -> Self: ...
+    def __gt__(self: 'UnitMeasure', other: 'UnitMeasure') -> bool: ...
 
     @abstractmethod
-    def __sub__(self: Self, other: int | float) -> Self: ...
+    def __add__(self: 'UnitMeasure', other: 'UnitMeasure') -> 'UnitMeasure': ...
+
+    @abstractmethod
+    def __sub__(self: 'UnitMeasure', other: 'UnitMeasure') -> 'UnitMeasure': ...
 
 
 UnitMeasure = TypeVar('UnitMeasure', bound=Mathable)
