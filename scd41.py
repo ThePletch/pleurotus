@@ -4,7 +4,8 @@ from typing_extensions import TypeGuard
 import logging
 import time
 
-from board import I2C
+import board
+import busio
 from adafruit_scd4x import SCD4X
 
 SCD41Reading = TypedDict('SCD41Reading', {
@@ -24,7 +25,7 @@ class SCD41:
 
     def __init__(self):
         self.has_reading = False
-        self._scd4x = SCD4X(I2C())
+        self._scd4x = SCD4X(busio.I2C(board.SCL, board.SDA))
         self._scd4x.start_periodic_measurement()
 
     def get_new_reading(self) -> None:

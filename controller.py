@@ -36,7 +36,8 @@ class MonodirectionalController(ABC, Generic[UnitMeasure]):
     """
     toggle: Callable[[bool], None]
 
-    active: bool = False
+    def __post_init__(self):
+        self.active = False
 
     def should_be_active(self, value: UnitMeasure) -> bool:
         # if the controller is already active, it'll turn back off once we're past our threshold.
@@ -54,12 +55,15 @@ class MonodirectionalController(ABC, Generic[UnitMeasure]):
     def control_state(self) -> None:
         try:
             current_value = self.reader()
+            logging.info(f"{self.measure_name}: {current_value}")
         except IOError:
             logging.warning(f"Failed to read a new measure value for {self.measure_name}, remaining in current state")
         target_state = self.should_be_active(current_value)
+        logging.debug(target_state)
         if self.active != target_state:
             logging.debug(f"Switching {self.measure_name} controller to {'active' if target_state else 'inactive'}")
             self.toggle(target_state)
+            self.active = target_state
 
 # Concrete controller classes
 
@@ -72,6 +76,7 @@ class CO2Controller(MonodirectionalController[float]):
     measure_name = "CO2 PPM"
 
 
+@dataclass
 class HumidityGatedCO2Controller(CO2Controller):
     """
     CO2 controller that only turns on the exhaust when the humidifier is off.

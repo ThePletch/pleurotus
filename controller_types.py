@@ -26,7 +26,7 @@ class Mathable(Protocol):
 UnitMeasure = TypeVar('UnitMeasure', bound=Mathable)
 
 
-class MonodirectionalControllerConfig(TypedDict, Generic[UnitMeasure]):
+class MonodirectionalControllerConfig(TypedDict):
     """
     Value at which our controller should activate its control device to manage the greenhouse's conditions,
     e.g. turn on exhaust to reduce CO2 levels

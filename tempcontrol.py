@@ -1,7 +1,6 @@
 from typing import Any
 
-import board
-from digitalio import DigitalInOut, Direction
+import RPi.GPIO as GPIO
 import logging
 import time
 
@@ -24,22 +23,20 @@ Future features:
 * Alarm controls for when levels remain out of bounds for longer than a configured duration, configurable alert destinations
 * LED panel controls for displaying current levels/stats
 """
-
-# TODO update to actual wired values
-HUMIDIFIER_POWER_TOGGLE_PIN = board.IO1
-EXHAUST_POWER_TOGGLE_PIN = board.IO10
-
+HUMIDIFIER_POWER_TOGGLE_PIN = 4
+EXHAUST_POWER_TOGGLE_PIN = 5
+logging.basicConfig(level=logging.DEBUG)
 
 class PinOutput:
-    def __init__(self, pin: Any):
-        self._pin = DigitalInOut(pin)
-        self._pin.direction = Direction.OUTPUT
+    def __init__(self, pin: int):
+        self._pin = pin
+        GPIO.setup(self._pin, GPIO.OUT)
 
     def set(self, state: bool) -> None:
-        self._pin.value = state
+        GPIO.output(self._pin, state)
 
 
-if __name__ == '__init__':
+if __name__ == '__main__':
     sensor = SCD41()
 
     humidifier_pin = PinOutput(HUMIDIFIER_POWER_TOGGLE_PIN)
@@ -49,7 +46,7 @@ if __name__ == '__init__':
         config={
             'target_side_of_threshold': 'above',
             # pretty sure that RH is reported in 0-100 scale
-            'threshold_value': 90.0,
+            'threshold_value': 80.0,
             'zero_energy_band': 2.0,
         },
         # read from SCD-41 sensor
@@ -69,11 +66,11 @@ if __name__ == '__init__':
         },
         # read from SCD-41 sensor
         reader=(lambda: sensor.get_current_reading('co2_ppm')),
-        toggle=exhaust_pin.set
+        toggle=exhaust_pin.set,
+        humidity_controller=humidity_control,
     )
 
     while True:
-        time.sleep(10)
         logging.debug("Getting new reading...")
         sensor.get_new_reading()
         logging.debug("Got a reading.")
@@ -81,3 +78,4 @@ if __name__ == '__init__':
             logging.debug(f"Updating state for {controller.measure_name} controller...")
             controller.control_state()
             logging.debug("Done.")
+        time.sleep(10)
