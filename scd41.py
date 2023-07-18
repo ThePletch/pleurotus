@@ -17,6 +17,7 @@ ReadingKeys = Literal['co2_ppm', 'relative_humidity_100', 'temp_f']
 
 # How often to poll the SCD-41 for a fresh reading upon request.
 POLL_INTERVAL_SECONDS = 5
+READING_TIMEOUT = 120
 
 
 class SCD41:
@@ -29,10 +30,14 @@ class SCD41:
         self._scd4x.start_periodic_measurement()
 
     def get_new_reading(self) -> None:
+        time_waited = 0
         while not self._scd4x.data_ready:
+            if time_waited > READING_TIMEOUT:
+                raise RuntimeError("Timed out waiting for SCD-41 reading ({time_waited}s)")
+
             logging.debug("Waiting for SCD-41 to have available reading...")
             time.sleep(POLL_INTERVAL_SECONDS)
-            # TODO timeout
+            time_waited += POLL_INTERVAL_SECONDS
 
         self.current_reading = {
             'co2_ppm': self._scd4x.CO2,

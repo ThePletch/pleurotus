@@ -2,13 +2,13 @@
 
 [[package]]
 name = "adafruit-blinka"
-version = "8.19.0"
+version = "8.20.0"
 description = "CircuitPython APIs for non-CircuitPython versions of Python such as CPython on Linux and MicroPython."
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "Adafruit-Blinka-8.19.0.tar.gz", hash = "sha256:be65e91dfdd9780cc39ed2beaf489aee5b24a28759aad20633282f946e5113fb"},
-    {file = "Adafruit_Blinka-8.19.0-py3-none-any.whl", hash = "sha256:95c3a58fcf1e820b295a994b21eeafef707525a9b9d6287f9085a7cccc05547b"},
+    {file = "Adafruit-Blinka-8.20.0.tar.gz", hash = "sha256:649d12d7cf4b2660c295d4a6d79e935200db7aeeb3df2469db648eddf982ee8b"},
+    {file = "Adafruit_Blinka-8.20.0-py3-none-any.whl", hash = "sha256:ca7188922a216240d5da24e987cf7fb1c696df4bccfef78e9db21ea5a1e8ba7e"},
 ]
 
 [package.dependencies]
@@ -34,13 +34,13 @@ adafruit-circuitpython-typing = "*"
 
 [[package]]
 name = "adafruit-circuitpython-requests"
-version = "1.14.1"
+version = "2.0.0"
 description = "A requests-like library for web interfacing"
 optional = false
 python-versions = "*"
 files = [
-    {file = "adafruit-circuitpython-requests-1.14.1.tar.gz", hash = "sha256:a1fcca87aba8c258a3afa7c4ee0c9eb98c224543a9e09a7ea2c19340c23366bc"},
-    {file = "adafruit_circuitpython_requests-1.14.1-py3-none-any.whl", hash = "sha256:7de16b1267351aaae2d6c0f6a9ccc250f4ba17d2a402ba16ac10960a1229d044"},
+    {file = "adafruit-circuitpython-requests-2.0.0.tar.gz", hash = "sha256:2558e77a4f72a9703dc9f29f74659007041751a63e634b377d2df96d0deda8d4"},
+    {file = "adafruit_circuitpython_requests-2.0.0-py3-none-any.whl", hash = "sha256:651716190bfd907d2cb28621d11c43c1ba53411ef340583655256b18c4d655ce"},
 ]
 
 [package.dependencies]
@@ -80,13 +80,13 @@ typing-extensions = ">=4.0,<5.0"
 
 [[package]]
 name = "adafruit-platformdetect"
-version = "3.46.0"
+version = "3.47.0"
 description = "Platform detection for use by libraries like Adafruit-Blinka."
 optional = false
 python-versions = "*"
 files = [
-    {file = "Adafruit-PlatformDetect-3.46.0.tar.gz", hash = "sha256:77c4619cc713787143a554be7399444d1cfbe6f14f38c21aa9ba8f1951b8bc76"},
-    {file = "Adafruit_PlatformDetect-3.46.0-py3-none-any.whl", hash = "sha256:f15a16df7b03828229d44ef481dc18bd1129e8f4e22f8f0bf7a02325dc1f34a5"},
+    {file = "Adafruit-PlatformDetect-3.47.0.tar.gz", hash = "sha256:e36606f9baf1282a35eb1a7bdbe1219829200010b60401583564caa934f58de1"},
+    {file = "Adafruit_PlatformDetect-3.47.0-py3-none-any.whl", hash = "sha256:9dd2012f7eb707ca7a88cbfadedaaaa95682f9956c2d7bb3fec5e9744a71e9a7"},
 ]
 
 [[package]]
@@ -99,6 +99,21 @@ files = [
     {file = "Adafruit_PureIO-1.1.11-py3-none-any.whl", hash = "sha256:281ab2099372cc0decc26326918996cbf21b8eed694ec4764d51eefa029d324e"},
     {file = "Adafruit_PureIO-1.1.11.tar.gz", hash = "sha256:c4cfbb365731942d1f1092a116f47dfdae0aef18c5b27f1072b5824ad5ea8c7c"},
 ]
+
+[[package]]
+name = "fake-rpi"
+version = "0.2"
+description = "Develop for Raspberry Pi on Windows or other systems that don't have RPi.GPIO libraries."
+optional = false
+python-versions = "*"
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/sn4k3/FakeRPi"
+reference = "0f30d32"
+resolved_reference = "0f30d320d5f715d8a4fb94e7105448508586ae94"
 
 [[package]]
 name = "flake8"
@@ -183,6 +198,20 @@ files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
 ]
+
+[[package]]
+name = "prometheus-client"
+version = "0.17.1"
+description = "Python client for the Prometheus monitoring system."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "prometheus_client-0.17.1-py3-none-any.whl", hash = "sha256:e537f37160f6807b8202a6fc4764cdd19bac5480ddd3e0d463c3002b34462101"},
+    {file = "prometheus_client-0.17.1.tar.gz", hash = "sha256:21e674f39831ae3f8acde238afd9a27a37d0d2fb5a28ea094f0ce25d2cbf2091"},
+]
+
+[package.extras]
+twisted = ["twisted"]
 
 [[package]]
 name = "pycodestyle"
@@ -300,4 +329,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "bef86f46f727f6b5fa8ab8e10c811c19b80352e916da0e1a0c782817e137c232"
+content-hash = "58f262b916ad3589b5ff629c7c9bd77d6e7f86b84e675988f35636a744651450"
