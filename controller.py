@@ -26,6 +26,11 @@ DEVICE_ACTIVE = Gauge(
     "Whether a device managing a measure is active",
     ['device', 'measure'],
 )
+DEVICE_THRESHOLD = Gauge(
+    'device_threshold',
+    "The measure threshold at which a device activates/deactivates",
+    ['device', 'measure', 'target'],
+)
 
 
 class Settable(Protocol):
@@ -100,9 +105,16 @@ class Controller(ABC):
 
 
 @dataclass
-class MonodirectionalController:
+class MonodirectionalController(Controller):
     config: MonodirectionalControllerConfig
     active: bool = field(init=False, default=False)
+
+    def __post_init__(self):
+        DEVICE_THRESHOLD.labels(
+            device=self.device_name,
+            measure=self.measure_name,
+            target=self.config['target_side_of_threshold'],
+        ).set(self.config['threshold_value'])
 
     def should_be_active(self, value: float) -> bool:
         # if the controller is already active, it'll turn back off once we're past our threshold.
