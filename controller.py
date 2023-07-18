@@ -53,7 +53,7 @@ class Controller(ABC):
     """
     device_name: str
 
-    active: bool = field(default=False)
+    active: bool = False
 
     """
     Function that returns the current value of the target measurement.
@@ -103,7 +103,7 @@ class Controller(ABC):
 @dataclass
 class MonodirectionalController:
     config: MonodirectionalControllerConfig
-    active: bool = field(default=False)
+    active: bool = field(init=False, default=False)
 
     def should_be_active(self, value: float) -> bool:
         # if the controller is already active, it'll turn back off once we're past our threshold.
