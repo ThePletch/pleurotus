@@ -103,7 +103,7 @@ class Controller(ABC):
 @dataclass
 class MonodirectionalController:
     config: MonodirectionalControllerConfig
-    active = field(default=False)
+    active: bool = field(default=False)
 
     def should_be_active(self, value: float) -> bool:
         # if the controller is already active, it'll turn back off once we're past our threshold.
