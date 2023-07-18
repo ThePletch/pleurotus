@@ -167,7 +167,7 @@ class CO2Controller(MonodirectionalController, SCDController, DeviceController):
 
 @dataclass
 class TemperatureController(MonodirectionalController, SCDController):
-    target_reading: Literal['temp_f'] = 'temp_f'
+    target_reading: Literal['temp_c'] = 'temp_c'
     measure_name = "temp"
     device_name = "heater_nonexistent"
 

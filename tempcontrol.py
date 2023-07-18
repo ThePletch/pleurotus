@@ -41,7 +41,6 @@ def controllers(sensor: SCD41) -> list[Controller]:
     humidity_control = HumidityController(
         config={
             'target_side_of_threshold': 'above',
-            # pretty sure that RH is reported in 0-100 scale
             'threshold_value': 80.0,
             'zero_energy_band': 2.0,
         },
@@ -73,8 +72,8 @@ def controllers(sensor: SCD41) -> list[Controller]:
     temp_control = TemperatureController(
         config={
             'target_side_of_threshold': 'above',
-            'threshold_value': 70.0,
-            'zero_energy_band': 2.0,
+            'threshold_value': 21.0,
+            'zero_energy_band': 1.0,
         },
         sensor=sensor,
     )

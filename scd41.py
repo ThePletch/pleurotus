@@ -11,9 +11,9 @@ from adafruit_scd4x import SCD4X
 SCD41Reading = TypedDict('SCD41Reading', {
     'co2_ppm': float,
     'relative_humidity_100': float,
-    'temp_f': float,
+    'temp_c': float,
 })
-ReadingKeys = Literal['co2_ppm', 'relative_humidity_100', 'temp_f']
+ReadingKeys = Literal['co2_ppm', 'relative_humidity_100', 'temp_c']
 
 # How often to poll the SCD-41 for a fresh reading upon request.
 POLL_INTERVAL_SECONDS = 5
@@ -41,7 +41,7 @@ class SCD41:
 
         self.current_reading = {
             'co2_ppm': self._scd4x.CO2,
-            'temp_f': self._scd4x.temperature,
+            'temp_c': self._scd4x.temperature,
             'relative_humidity_100': self._scd4x.relative_humidity,
         }
         self.has_reading = True
