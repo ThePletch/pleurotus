@@ -11,7 +11,7 @@ except ImportError:
 import logging
 from typing import Literal, Protocol
 
-from prometheus_client import Enum, Gauge
+from prometheus_client import Gauge
 
 from controller_types import MonodirectionalControllerConfig
 from scd41 import ReadingKeys, SCD41
@@ -21,11 +21,10 @@ MEASURE_VALUE = Gauge(
     "Reported value for a measure",
     ['measure'],
 )
-DEVICE_ACTIVE = Enum(
+DEVICE_ACTIVE = Gauge(
     'device_active',
     "Whether a device managing a measure is active",
     ['device', 'measure'],
-    states=['active', 'inactive'],
 )
 
 
@@ -92,7 +91,7 @@ class Controller(ABC):
         DEVICE_ACTIVE.labels(
             device=self.device_name,
             measure=self.measure_name,
-        ).state('active' if target_state else 'inactive')
+        ).set(1 if target_state else 0)
         logging.debug(f"{self.device_name}: {target_state}")
         if self.active != target_state:
             logging.debug(f"Switching {self.measure_name} controller to {'active' if target_state else 'inactive'}")
