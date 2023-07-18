@@ -1,6 +1,8 @@
 import logging
 import time
 
+from prometheus_client import start_http_server
+
 from scd41 import SCD41
 from controller import (
     Controller,
@@ -93,6 +95,7 @@ def controllers(sensor: SCD41) -> list[Controller]:
 
 
 if __name__ == '__main__':
+    start_http_server(9100)
     sensor = SCD41()
     measure_controllers = controllers(sensor)
 
