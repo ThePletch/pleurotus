@@ -53,7 +53,7 @@ class Controller(ABC):
     """
     device_name: str
 
-    active = field(default=False)
+    active: bool = field(default=False)
 
     """
     Function that returns the current value of the target measurement.
@@ -147,9 +147,23 @@ class HumidityController(MonodirectionalController, SCDController, DeviceControl
 
 @dataclass
 class CO2Controller(MonodirectionalController, SCDController, DeviceController):
+    """
+    The CO2 controller only turns on the exhaust when the humidifier is off.
+
+    This avoids fog being exhausted from the chamber before it's able to evaporate into the air and increase humidity levels.
+    """
+    humidity_controller: HumidityController
     target_reading: Literal['co2_ppm'] = 'co2_ppm'
     measure_name = "co2"
     device_name = "exhaust_fan"
+
+    def should_be_active(self, value: float) -> bool:
+        base_active_state = super().should_be_active(value)
+        if not self.humidity_controller.should_be_active(self.humidity_controller.reader()):
+            return base_active_state
+        elif base_active_state:
+            logging.debug("Exhaust is waiting to activate due to high CO2 levels, but is disabled while the humidifier runs.")
+        return False
 
 
 @dataclass
@@ -185,21 +199,3 @@ class LightsController(Controller):
     # no device attached right now
     def toggle(self, state):
         pass
-
-
-@dataclass
-class HumidityGatedCO2Controller(CO2Controller):
-    """
-    CO2 controller that only turns on the exhaust when the humidifier is off.
-
-    This avoids fog being exhausted from the chamber before it's able to evaporate into the air and increase humidity levels.
-    """
-    humidity_controller: HumidityController = field(kw_only=True)
-
-    def should_be_active(self, value: float) -> bool:
-        base_active_state = super().should_be_active(value)
-        if not self.humidity_controller.should_be_active(self.humidity_controller.reader()):
-            return base_active_state
-        elif base_active_state:
-            logging.debug("Exhaust is waiting to activate due to high CO2 levels, but is disabled while the humidifier runs.")
-        return False

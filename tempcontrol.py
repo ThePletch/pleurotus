@@ -5,7 +5,7 @@ from scd41 import SCD41
 from controller import (
     Controller,
     HumidityController,
-    HumidityGatedCO2Controller,
+    CO2Controller,
     LightsController,
     PinOutput,
     TemperatureController,
@@ -51,7 +51,7 @@ def controllers(sensor: SCD41) -> list[Controller]:
     typical indoor CO2 level is 400 ppm,
     mushrooms want between 700-1000ppm typically
     """
-    co2_control = HumidityGatedCO2Controller(
+    co2_control = CO2Controller(
         config={
             'target_side_of_threshold': 'below',
             'threshold_value': 800.0,
