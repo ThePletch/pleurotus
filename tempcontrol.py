@@ -70,8 +70,8 @@ def monitors(sensor: SCD41) -> list[Monitor]:
 
 
 if __name__ == '__main__':
-    start_http_server(9100)
-    sensor = SCD41()
+    start_http_server(config.metrics_server_port)
+    sensor = SCD41(config.scd41)
     device_controllers = controllers(sensor)
     measure_monitors = monitors(sensor)
 

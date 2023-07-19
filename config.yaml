@@ -8,4 +8,3 @@ exhaust:
   # mushrooms want between 700-1000ppm typically
   maximum_co2_ppm: 800
   zero_energy_band: 100
-update_interval_seconds: 10.0

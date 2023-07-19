@@ -16,7 +16,19 @@ class ExhaustConfig:
     zero_energy_band: int
 
 
+@dataclass
+class SCD41Config:
+    """
+    How often to poll the SCD-41 for a fresh reading upon request.
+    """
+    poll_interval_seconds: float = 5.0
+    read_timeout: float = 120.0
+
+
+@dataclass
 class GreenhouseConfig(YAMLWizard):
     humidifier: HumidifierConfig
     exhaust: ExhaustConfig
-    update_interval_seconds: float
+    scd41: SCD41Config
+    update_interval_seconds: float = 10.0
+    metrics_server_port: int = 9100
