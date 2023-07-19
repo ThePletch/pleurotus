@@ -32,7 +32,7 @@ class SCD41:
         time_waited = 0.0
         while not self._scd4x.data_ready:
             if time_waited > self.config.read_timeout:
-                raise RuntimeError("Timed out waiting for SCD-41 reading ({time_waited}s)")
+                raise RuntimeError(f"Timed out waiting for SCD-41 reading ({time_waited}s)")
 
             logging.debug("Waiting for SCD-41 to have available reading...")
             time.sleep(self.config.poll_interval_seconds)
