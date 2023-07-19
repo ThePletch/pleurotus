@@ -1,0 +1,11 @@
+humidifier:
+  gpio_pin_id: 4
+  minimum_humidity_pct: 90.0
+  zero_energy_band: 2.0
+exhaust:
+  gpio_pin_id: 5
+  # typical indoor CO2 level is 400-600 ppm.
+  # mushrooms want between 700-1000ppm typically
+  maximum_co2_ppm: 800
+  zero_energy_band: 100
+update_interval_seconds: 10.0

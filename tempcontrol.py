@@ -3,20 +3,20 @@ import time
 
 from prometheus_client import start_http_server
 
-from scd41 import SCD41
+from config import GreenhouseConfig
 from controller import (
-    Controller,
-    HumidityController,
     CO2Controller,
-    LightsController,
+    HumidityController,
     PinOutput,
-    TemperatureController,
+    TemperatureMonitor,
 )
+from controller_types import Controller, Monitor
+from scd41 import SCD41
 
 """
 Control code for managing switching of humidity and CO2 controls.
 Assumes the following:
-* Humidity and CO2 are measured via an SCD-41 sensor connected via the STEMMA QT protocol
+* Humidity and CO2 are measured via an SCD-41 sensor connected via the I2C protocol
 
 * Humidity is managed with a humidification device controlled by a single power toggle
     * In our case, an aquarium fogger in a chamber circulated by a waterproof 12V fan
@@ -26,84 +26,68 @@ Assumes the following:
 * CO2 will not need to be increased.
 
 Future features:
-* Alarm controls for when levels remain out of bounds for longer than a configured duration, configurable alert destinations
 * LED panel controls for displaying current levels/stats
+* Control of target environment levels via knobs/dials (potentiometers are hard)
 """
-HUMIDIFIER_POWER_TOGGLE_PIN = 4
-EXHAUST_POWER_TOGGLE_PIN = 5
 logging.basicConfig(level=logging.INFO)
+config = GreenhouseConfig.from_yaml_file('config.yaml')
 
 
 def controllers(sensor: SCD41) -> list[Controller]:
-    humidifier_pin = PinOutput(HUMIDIFIER_POWER_TOGGLE_PIN)
-    exhaust_pin = PinOutput(EXHAUST_POWER_TOGGLE_PIN)
-
     humidity_control = HumidityController(
         config={
             'target_side_of_threshold': 'above',
-            'threshold_value': 80.0,
-            'zero_energy_band': 2.0,
+            'threshold_value': config.humidifier.minimum_humidity_pct,
+            'zero_energy_band': config.humidifier.zero_energy_band,
         },
         sensor=sensor,
-        device=humidifier_pin,
+        device=PinOutput(config.humidifier.gpio_pin_id),
     )
 
-    """
-    typical indoor CO2 level is 400 ppm,
-    mushrooms want between 700-1000ppm typically
-    """
     co2_control = CO2Controller(
         config={
             'target_side_of_threshold': 'below',
-            'threshold_value': 800.0,
-            'zero_energy_band': 100.0,
+            'threshold_value': config.exhaust.maximum_co2_ppm,
+            'zero_energy_band': config.exhaust.zero_energy_band,
         },
         sensor=sensor,
-        device=exhaust_pin,
+        device=PinOutput(config.exhaust.gpio_pin_id),
         humidity_controller=humidity_control,
-    )
-
-    """
-    config is accurate to what we want, but there's not currently
-    a heater in the system since it's summertime.
-    this exists primarily to export temperature readings to the associated
-    metrics service.
-    """
-    temp_control = TemperatureController(
-        config={
-            'target_side_of_threshold': 'above',
-            'threshold_value': 21.0,
-            'zero_energy_band': 1.0,
-        },
-        sensor=sensor,
-    )
-
-    lights_control = LightsController(
-        active_hour_ranges=[
-            # 8am to 8pm (hour is zero indexed)
-            (7, 19),
-        ]
     )
 
     return [
         humidity_control,
         co2_control,
-        lights_control,
-        temp_control,
+    ]
+
+
+def monitors(sensor: SCD41) -> list[Monitor]:
+    return [
+        TemperatureMonitor(
+            sensor=sensor,
+        ),
     ]
 
 
 if __name__ == '__main__':
     start_http_server(9100)
     sensor = SCD41()
-    measure_controllers = controllers(sensor)
+    device_controllers = controllers(sensor)
+    measure_monitors = monitors(sensor)
 
     while True:
         logging.debug("Getting new reading...")
         sensor.get_new_reading()
         logging.debug("Got a reading.")
-        for controller in measure_controllers:
-            logging.debug(f"Updating state for {controller.measure_name} controller...")
+
+        for monitor in measure_monitors:
+            logging.debug(f"Fetching value from {monitor.measure_name} monitor...")
+            monitor.read_value()
+            logging.debug("Done.")
+
+        for controller in device_controllers:
+            logging.debug(f"Updating state for {controller.device_name} controller...")
             controller.control_state()
             logging.debug("Done.")
-        time.sleep(10)
+
+        time.sleep(config.update_interval_seconds)

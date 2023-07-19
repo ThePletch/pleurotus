@@ -15,6 +15,7 @@ fake-rpi = [
   { git = "https://github.com/sn4k3/FakeRPi", rev = "0f30d32", platform = "darwin" },
 ]
 prometheus-client = "^0.17.1"
+dataclass-wizard = {extras = ["yaml"], version = "^0.22.2"}
 
 [tool.poetry.dev-dependencies]
 mypy = "^1.4.1"

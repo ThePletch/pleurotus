@@ -1,8 +1,7 @@
-from typing import Literal, TypedDict
-from typing_extensions import TypeGuard
-
 import logging
 import time
+from typing import Literal, TypedDict
+from typing_extensions import TypeGuard
 
 import board
 import busio
