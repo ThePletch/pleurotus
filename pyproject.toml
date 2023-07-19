@@ -8,7 +8,14 @@ authors = ["Shay Pletcher <4468322+ThePletch@users.noreply.github.com>"]
 python = "^3.9"
 Adafruit-Blinka = "^8.19.0"
 adafruit-circuitpython-scd4x = "^1.3.9"
-rpi-gpio = "^0.7.1"
+rpi-gpio = [
+  { version = "^0.7.1", platform = "linux" },
+]
+fake-rpi = [
+  { git = "https://github.com/sn4k3/FakeRPi", rev = "0f30d32", platform = "darwin" },
+]
+prometheus-client = "^0.17.1"
+dataclass-wizard = {extras = ["yaml"], version = "^0.22.2"}
 
 [tool.poetry.dev-dependencies]
 mypy = "^1.4.1"
