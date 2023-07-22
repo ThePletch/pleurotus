@@ -6,5 +6,5 @@ exhaust:
   gpio_pin_id: 5
   # typical indoor CO2 level is 400-600 ppm.
   # mushrooms want between 700-1000ppm typically
-  maximum_co2_ppm: 800
+  maximum_co2_ppm: 850
   zero_energy_band: 100

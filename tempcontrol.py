@@ -34,30 +34,25 @@ config = GreenhouseConfig.from_yaml_file('config.yaml')
 
 
 def controllers(sensor: SCD41) -> list[Controller]:
-    humidity_control = HumidityController(
-        config={
-            'target_side_of_threshold': 'above',
-            'threshold_value': config.humidifier.minimum_humidity_pct,
-            'zero_energy_band': config.humidifier.zero_energy_band,
-        },
-        sensor=sensor,
-        device=PinOutput(config.humidifier.gpio_pin_id),
-    )
-
-    co2_control = CO2Controller(
-        config={
-            'target_side_of_threshold': 'below',
-            'threshold_value': config.exhaust.maximum_co2_ppm,
-            'zero_energy_band': config.exhaust.zero_energy_band,
-        },
-        sensor=sensor,
-        device=PinOutput(config.exhaust.gpio_pin_id),
-        humidity_controller=humidity_control,
-    )
-
     return [
-        humidity_control,
-        co2_control,
+        HumidityController(
+            config={
+                'target_side_of_threshold': 'above',
+                'threshold_value': config.humidifier.minimum_humidity_pct,
+                'zero_energy_band': config.humidifier.zero_energy_band,
+            },
+            sensor=sensor,
+            device=PinOutput(config.humidifier.gpio_pin_id),
+        ),
+        CO2Controller(
+            config={
+                'target_side_of_threshold': 'below',
+                'threshold_value': config.exhaust.maximum_co2_ppm,
+                'zero_energy_band': config.exhaust.zero_energy_band,
+            },
+            sensor=sensor,
+            device=PinOutput(config.exhaust.gpio_pin_id),
+        ),
     ]
 
 

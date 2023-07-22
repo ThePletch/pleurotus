@@ -35,23 +35,9 @@ class HumidityController(MonodirectionalController, DeviceController, SCDMonitor
 
 @dataclass
 class CO2Controller(MonodirectionalController, DeviceController, SCDMonitor):
-    """
-    The CO2 controller only turns on the exhaust when the humidifier is off.
-
-    This avoids fog being exhausted from the chamber before it's able to evaporate into the air and increase humidity levels.
-    """
-    humidity_controller: HumidityController
     target_reading: Literal['co2_ppm'] = 'co2_ppm'
     measure_name = "co2"
     device_name = "exhaust_fan"
-
-    def should_be_active(self, value: float) -> bool:
-        base_active_state = super().should_be_active(value)
-        if not self.humidity_controller.should_be_active(self.humidity_controller.reader()):
-            return base_active_state
-        elif base_active_state:
-            logging.debug("Exhaust is waiting to activate due to high CO2 levels, but is disabled while the humidifier runs.")
-        return False
 
 
 @dataclass
