@@ -17,9 +17,9 @@ class ExhaustConfig:
 
 
 @dataclass
-class SCD41Config:
+class SensorConfig:
     """
-    How often to poll the SCD-41 for a fresh reading upon request.
+    How often to poll the sensor for a fresh reading upon request.
     """
     poll_interval_seconds: float = 5.0
     read_timeout: float = 120.0
@@ -29,6 +29,7 @@ class SCD41Config:
 class GreenhouseConfig(YAMLWizard):
     humidifier: HumidifierConfig
     exhaust: ExhaustConfig
-    scd41: SCD41Config
+    scd41: SensorConfig = SensorConfig()
+    aht20: SensorConfig = SensorConfig()
     update_interval_seconds: float = 10.0
     metrics_server_port: int = 9100

@@ -4,7 +4,7 @@ import logging
 from typing import Literal, Protocol, TypedDict
 
 from metrics import MEASURE_VALUE, DEVICE_ACTIVE, DEVICE_THRESHOLD
-from scd41 import ReadingKey, SCD41
+from sensor import SCD41, AHT20, SCD41ReadingKey, AHT20ReadingKey
 
 
 class Settable(Protocol):
@@ -126,10 +126,21 @@ class SCDMonitor(Monitor, ABC):
     sensor: SCD41
 
     @abstractproperty
-    def target_reading(self) -> ReadingKey: ...
+    def target_reading(self) -> SCD41ReadingKey: ...
 
     def reader(self):
-        return self.sensor.get_current_reading(self.target_reading)
+        return self.sensor.get_current_reading()[self.target_reading]
+
+
+@dataclass
+class AHTMonitor(Monitor, ABC):
+    sensor: AHT20
+
+    @abstractproperty
+    def target_reading(self) -> AHT20ReadingKey: ...
+
+    def reader(self):
+        return self.sensor.get_current_reading()[self.target_reading]
 
 
 @dataclass

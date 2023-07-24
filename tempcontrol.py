@@ -11,7 +11,7 @@ from controller import (
     TemperatureMonitor,
 )
 from controller_types import Controller, Monitor
-from scd41 import SCD41
+from sensor import AHT20, SCD41
 
 """
 Control code for managing switching of humidity and CO2 controls.
@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 config = GreenhouseConfig.from_yaml_file('config.yaml')
 
 
-def controllers(sensor: SCD41) -> list[Controller]:
+def controllers(aht20: AHT20, scd41: SCD41) -> list[Controller]:
     return [
         HumidityController(
             config={
@@ -41,7 +41,7 @@ def controllers(sensor: SCD41) -> list[Controller]:
                 'threshold_value': config.humidifier.minimum_humidity_pct,
                 'zero_energy_band': config.humidifier.zero_energy_band,
             },
-            sensor=sensor,
+            sensor=aht20,
             device=PinOutput(config.humidifier.gpio_pin_id),
         ),
         CO2Controller(
@@ -50,13 +50,13 @@ def controllers(sensor: SCD41) -> list[Controller]:
                 'threshold_value': config.exhaust.maximum_co2_ppm,
                 'zero_energy_band': config.exhaust.zero_energy_band,
             },
-            sensor=sensor,
+            sensor=scd41,
             device=PinOutput(config.exhaust.gpio_pin_id),
         ),
     ]
 
 
-def monitors(sensor: SCD41) -> list[Monitor]:
+def monitors(sensor: AHT20) -> list[Monitor]:
     return [
         TemperatureMonitor(
             sensor=sensor,
@@ -66,14 +66,16 @@ def monitors(sensor: SCD41) -> list[Monitor]:
 
 if __name__ == '__main__':
     start_http_server(config.metrics_server_port)
-    sensor = SCD41(config.scd41)
-    device_controllers = controllers(sensor)
-    measure_monitors = monitors(sensor)
+    scd41 = SCD41(config.scd41)
+    aht20 = AHT20(config.aht20)
+    device_controllers = controllers(aht20, scd41)
+    measure_monitors = monitors(aht20)
 
     while True:
-        logging.debug("Getting new reading...")
-        sensor.get_new_reading()
-        logging.debug("Got a reading.")
+        logging.debug("Getting new readings...")
+        aht20.get_new_reading()
+        scd41.get_new_reading()
+        logging.debug("Got readings.")
 
         for monitor in measure_monitors:
             logging.debug(f"Fetching value from {monitor.measure_name} monitor...")

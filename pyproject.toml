@@ -16,6 +16,7 @@ fake-rpi = [
 ]
 prometheus-client = "^0.17.1"
 dataclass-wizard = {extras = ["yaml"], version = "^0.22.2"}
+adafruit-circuitpython-ahtx0 = "^1.0.18"
 
 [tool.poetry.dev-dependencies]
 mypy = "^1.4.1"
