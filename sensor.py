@@ -16,8 +16,6 @@ SensorReading = TypeVar('SensorReading', covariant=True)
 class HardwareSensor(Protocol[SensorReading]):
     data_ready: bool
 
-    def start_periodic_measurement(self) -> None: ...
-
     def get_reading(self) -> SensorReading: ...
 
 
@@ -36,7 +34,6 @@ class Sensor(Generic[SensorReading], ABC):
         self.config = config
         self.has_reading = False
         self._sensor = self._build_sensor()
-        self._sensor.start_periodic_measurement()
 
     def get_current_reading(self) -> SensorReading:
         if self.has_reading:
@@ -85,7 +82,9 @@ SCD41ReadingKey = Literal['co2_ppm', 'relative_humidity_100', 'temp_c']
 
 class SCD41(Sensor[SCD41Reading]):
     def _build_sensor(self):
-        return SCD4X(busio.I2C(board.SCL, board.SDA))
+        sensor = SCD4X(busio.I2C(board.SCL, board.SDA))
+        sensor.start_periodic_measurement()
+        return sensor
 
     def reading_from_sensor(self):
         return {
