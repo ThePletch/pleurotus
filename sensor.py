@@ -14,8 +14,6 @@ SensorReading = TypeVar('SensorReading', covariant=True)
 
 
 class HardwareSensor(Protocol[SensorReading]):
-    data_ready: bool
-
     def get_reading(self) -> SensorReading: ...
 
 
@@ -41,15 +39,6 @@ class Sensor(Generic[SensorReading], ABC):
         raise IOError("No reading available.")
 
     def get_new_reading(self) -> None:
-        time_waited = 0.0
-        while not self._sensor.data_ready:
-            if time_waited > self.config.read_timeout:
-                raise RuntimeError(f"Timed out waiting for AHT20 reading ({time_waited}s)")
-
-            logging.debug("Waiting for AHT20 to have available reading...")
-            time.sleep(self.config.poll_interval_seconds)
-            time_waited += self.config.poll_interval_seconds
-
         self.current_reading = self.reading_from_sensor()
         self.has_reading = True
 
@@ -87,6 +76,15 @@ class SCD41(Sensor[SCD41Reading]):
         return sensor
 
     def reading_from_sensor(self):
+        time_waited = 0.0
+        while not self._sensor.data_ready:
+            if time_waited > self.config.read_timeout:
+                raise RuntimeError(f"Timed out waiting for SCD-41 reading ({time_waited}s)")
+
+            logging.debug("Waiting for SCD-41 to have available reading...")
+            time.sleep(self.config.poll_interval_seconds)
+            time_waited += self.config.poll_interval_seconds
+
         return {
             'co2_ppm': self._sensor.CO2,
             'temp_c': self._sensor.temperature,
