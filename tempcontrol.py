@@ -5,9 +5,11 @@ from prometheus_client import start_http_server
 
 from config import GreenhouseConfig
 from controller import (
+    AHTHumidityMonitor,
     CO2Controller,
     HumidityController,
     PinOutput,
+    SCDTemperatureMonitor,
     TemperatureMonitor,
 )
 from controller_types import Controller, Monitor
@@ -56,10 +58,16 @@ def controllers(aht20: AHT20, scd41: SCD41) -> list[Controller]:
     ]
 
 
-def monitors(sensor: AHT20) -> list[Monitor]:
+def monitors(aht20: AHT20, scd41: SCD41) -> list[Monitor]:
     return [
+        AHTHumidityMonitor(
+            sensor=aht20,
+        ),
         TemperatureMonitor(
-            sensor=sensor,
+            sensor=aht20,
+        ),
+        SCDTemperatureMonitor(
+            sensor=scd41,
         ),
     ]
 
@@ -69,7 +77,7 @@ if __name__ == '__main__':
     scd41 = SCD41(config.scd41)
     aht20 = AHT20(config.aht20)
     device_controllers = controllers(aht20, scd41)
-    measure_monitors = monitors(aht20)
+    measure_monitors = monitors(aht20, scd41)
 
     while True:
         logging.debug("Getting new readings...")

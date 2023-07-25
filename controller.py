@@ -44,3 +44,15 @@ class CO2Controller(MonodirectionalController, DeviceController, SCDMonitor):
 class TemperatureMonitor(AHTMonitor):
     target_reading: Literal['temp_c'] = 'temp_c'
     measure_name = "temp"
+
+
+@dataclass
+class SCDTemperatureMonitor(SCDMonitor):
+    target_reading: Literal['temp_c'] = 'temp_c'
+    measure_name = "temp_scd"
+
+
+@dataclass
+class AHTHumidityMonitor(AHTMonitor):
+    target_reading: Literal['relative_humidity_100'] = 'relative_humidity_100'
+    measure_name = "relative_humidity_aht"
