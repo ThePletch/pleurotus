@@ -27,7 +27,7 @@ class PinOutput(Settable):
 
 
 @dataclass
-class HumidityController(MonodirectionalController, DeviceController, AHTMonitor):
+class HumidityController(MonodirectionalController, DeviceController, SCDMonitor):
     target_reading: Literal['relative_humidity_100'] = 'relative_humidity_100'
     measure_name = "relative_humidity"
     device_name = "humidifier"

@@ -41,7 +41,7 @@ def controllers(aht20: AHT20, scd41: SCD41) -> list[Controller]:
                 'threshold_value': config.humidifier.minimum_humidity_pct,
                 'zero_energy_band': config.humidifier.zero_energy_band,
             },
-            sensor=aht20,
+            sensor=scd41,
             device=PinOutput(config.humidifier.gpio_pin_id),
         ),
         CO2Controller(
