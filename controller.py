@@ -6,12 +6,12 @@ try:
     import RPi.GPIO as GPIO
 except ImportError:
     import FakeRPi.GPIO as GPIO
-import logging
 from typing import Literal
 
 from controller_types import (
     DeviceController,
     MonodirectionalController,
+    AHTMonitor,
     SCDMonitor,
     Settable,
 )
@@ -41,6 +41,18 @@ class CO2Controller(MonodirectionalController, DeviceController, SCDMonitor):
 
 
 @dataclass
-class TemperatureMonitor(SCDMonitor):
+class TemperatureMonitor(AHTMonitor):
     target_reading: Literal['temp_c'] = 'temp_c'
     measure_name = "temp"
+
+
+@dataclass
+class SCDTemperatureMonitor(SCDMonitor):
+    target_reading: Literal['temp_c'] = 'temp_c'
+    measure_name = "temp_scd"
+
+
+@dataclass
+class AHTHumidityMonitor(AHTMonitor):
+    target_reading: Literal['relative_humidity_100'] = 'relative_humidity_100'
+    measure_name = "relative_humidity_aht"
