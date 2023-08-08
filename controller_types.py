@@ -3,7 +3,12 @@ from dataclasses import dataclass, field
 import logging
 from typing import Literal, Protocol, TypedDict
 
-from metrics import MEASURE_VALUE, DEVICE_ACTIVE, DEVICE_THRESHOLD
+from metrics import (
+    MEASURE_VALUE,
+    DEVICE_ACTIVE,
+    DEVICE_THRESHOLD,
+    DEVICE_ZERO_ENERGY_BAND,
+)
 from sensor import SCD41, AHT20, SCD41ReadingKey, AHT20ReadingKey
 
 
@@ -126,6 +131,11 @@ class MonodirectionalController(Controller):
             measure=self.measure_name,
             target=self.config['target_side_of_threshold'],
         ).set(self.config['threshold_value'])
+        DEVICE_ZERO_ENERGY_BAND.labels(
+            device=self.device_name,
+            measure=self.measure_name,
+            target=self.config['target_side_of_threshold'],
+        ).set(self.config['zero_energy_band'])
 
 
 @dataclass
