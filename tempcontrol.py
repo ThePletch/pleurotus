@@ -86,16 +86,16 @@ if __name__ == '__main__':
 
     def reload_device_config(_signum, _frame):
         config = get_config_from_file()
-        device_controllers['humidifier'].config = {
+        device_controllers['humidifier'].set_config({
             'target_side_of_threshold': 'above',
             'threshold_value': config.humidifier.minimum_humidity_pct,
             'zero_energy_band': config.humidifier.zero_energy_band,
-        }
-        device_controllers['exhaust'].config = {
+        })
+        device_controllers['exhaust'].set_config({
             'target_side_of_threshold': 'below',
             'threshold_value': config.exhaust.maximum_co2_ppm,
             'zero_energy_band': config.exhaust.zero_energy_band,
-        }
+        })
 
     signal.signal(signal.SIGHUP, reload_device_config)
 

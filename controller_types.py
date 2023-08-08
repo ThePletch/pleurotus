@@ -101,11 +101,18 @@ class MonodirectionalController(Controller):
     active: bool = field(init=False, default=False)
 
     def __post_init__(self):
+        self._report_threshold()
+
+    def _report_threshold(self):
         DEVICE_THRESHOLD.labels(
             device=self.device_name,
             measure=self.measure_name,
             target=self.config['target_side_of_threshold'],
         ).set(self.config['threshold_value'])
+
+    def update_config(self, config: MonodirectionalControllerConfig) -> None:
+        self.config = config
+        self._report_threshold()
 
     def should_be_active(self, value: float) -> bool:
         # if the controller is already active, it'll turn back off once we're past our threshold.
