@@ -103,13 +103,6 @@ class MonodirectionalController(Controller):
     def __post_init__(self):
         self._report_threshold()
 
-    def _report_threshold(self):
-        DEVICE_THRESHOLD.labels(
-            device=self.device_name,
-            measure=self.measure_name,
-            target=self.config['target_side_of_threshold'],
-        ).set(self.config['threshold_value'])
-
     def update_config(self, config: MonodirectionalControllerConfig) -> None:
         self.config = config
         self._report_threshold()
@@ -126,6 +119,13 @@ class MonodirectionalController(Controller):
             return value > self.config['threshold_value'] + self.config['zero_energy_band']
 
         return value < self.config['threshold_value'] - self.config['zero_energy_band']
+
+    def _report_threshold(self) -> None:
+        DEVICE_THRESHOLD.labels(
+            device=self.device_name,
+            measure=self.measure_name,
+            target=self.config['target_side_of_threshold'],
+        ).set(self.config['threshold_value'])
 
 
 @dataclass
