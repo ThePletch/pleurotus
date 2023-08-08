@@ -3,7 +3,12 @@ from dataclasses import dataclass, field
 import logging
 from typing import Literal, Protocol, TypedDict
 
-from metrics import MEASURE_VALUE, DEVICE_ACTIVE, DEVICE_THRESHOLD
+from metrics import (
+    MEASURE_VALUE,
+    DEVICE_ACTIVE,
+    DEVICE_THRESHOLD,
+    DEVICE_ZERO_ENERGY_BAND,
+)
 from sensor import SCD41, AHT20, SCD41ReadingKey, AHT20ReadingKey
 
 
@@ -101,11 +106,11 @@ class MonodirectionalController(Controller):
     active: bool = field(init=False, default=False)
 
     def __post_init__(self):
-        DEVICE_THRESHOLD.labels(
-            device=self.device_name,
-            measure=self.measure_name,
-            target=self.config['target_side_of_threshold'],
-        ).set(self.config['threshold_value'])
+        self._report_threshold()
+
+    def update_config(self, config: MonodirectionalControllerConfig) -> None:
+        self.config = config
+        self._report_threshold()
 
     def should_be_active(self, value: float) -> bool:
         # if the controller is already active, it'll turn back off once we're past our threshold.
@@ -119,6 +124,18 @@ class MonodirectionalController(Controller):
             return value > self.config['threshold_value'] + self.config['zero_energy_band']
 
         return value < self.config['threshold_value'] - self.config['zero_energy_band']
+
+    def _report_threshold(self) -> None:
+        DEVICE_THRESHOLD.labels(
+            device=self.device_name,
+            measure=self.measure_name,
+            target=self.config['target_side_of_threshold'],
+        ).set(self.config['threshold_value'])
+        DEVICE_ZERO_ENERGY_BAND.labels(
+            device=self.device_name,
+            measure=self.measure_name,
+            target=self.config['target_side_of_threshold'],
+        ).set(self.config['zero_energy_band'])
 
 
 @dataclass

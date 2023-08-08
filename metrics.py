@@ -15,3 +15,8 @@ DEVICE_THRESHOLD = Gauge(
     "The measure threshold at which a device activates/deactivates",
     ['device', 'measure', 'target'],
 )
+DEVICE_ZERO_ENERGY_BAND = Gauge(
+    'device_zero_energy_band',
+    "The amount that a measure must exceed its threshold for a device to activate",
+    ['device', 'measure', 'target'],
+)

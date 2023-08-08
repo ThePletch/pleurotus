@@ -1,4 +1,5 @@
 import logging
+import signal
 import time
 
 from prometheus_client import start_http_server
@@ -32,12 +33,15 @@ Future features:
 * Control of target environment levels via knobs/dials (potentiometers are hard)
 """
 logging.basicConfig(level=logging.INFO)
-config = GreenhouseConfig.from_yaml_file('config.yaml')
 
 
-def controllers(aht20: AHT20, scd41: SCD41) -> list[Controller]:
-    return [
-        HumidityController(
+def get_config_from_file():
+    return GreenhouseConfig.from_yaml_file('config.yaml')
+
+
+def controllers(aht20: AHT20, scd41: SCD41) -> dict[str, Controller]:
+    return {
+        'humidifier': HumidityController(
             config={
                 'target_side_of_threshold': 'above',
                 'threshold_value': config.humidifier.minimum_humidity_pct,
@@ -46,7 +50,7 @@ def controllers(aht20: AHT20, scd41: SCD41) -> list[Controller]:
             sensor=scd41,
             device=PinOutput(config.humidifier.gpio_pin_id),
         ),
-        CO2Controller(
+        'exhaust': CO2Controller(
             config={
                 'target_side_of_threshold': 'below',
                 'threshold_value': config.exhaust.maximum_co2_ppm,
@@ -55,7 +59,7 @@ def controllers(aht20: AHT20, scd41: SCD41) -> list[Controller]:
             sensor=scd41,
             device=PinOutput(config.exhaust.gpio_pin_id),
         ),
-    ]
+    }
 
 
 def monitors(aht20: AHT20, scd41: SCD41) -> list[Monitor]:
@@ -73,11 +77,27 @@ def monitors(aht20: AHT20, scd41: SCD41) -> list[Monitor]:
 
 
 if __name__ == '__main__':
+    config = get_config_from_file()
     start_http_server(config.metrics_server_port)
     scd41 = SCD41(config.scd41)
     aht20 = AHT20(config.aht20)
     device_controllers = controllers(aht20, scd41)
     measure_monitors = monitors(aht20, scd41)
+
+    def reload_device_config(_signum, _frame):
+        config = get_config_from_file()
+        device_controllers['humidifier'].set_config({
+            'target_side_of_threshold': 'above',
+            'threshold_value': config.humidifier.minimum_humidity_pct,
+            'zero_energy_band': config.humidifier.zero_energy_band,
+        })
+        device_controllers['exhaust'].set_config({
+            'target_side_of_threshold': 'below',
+            'threshold_value': config.exhaust.maximum_co2_ppm,
+            'zero_energy_band': config.exhaust.zero_energy_band,
+        })
+
+    signal.signal(signal.SIGHUP, reload_device_config)
 
     while True:
         logging.debug("Getting new readings...")
@@ -90,7 +110,7 @@ if __name__ == '__main__':
             monitor.read_value()
             logging.debug("Done.")
 
-        for controller in device_controllers:
+        for _, controller in device_controllers.items():
             logging.debug(f"Updating state for {controller.device_name} controller...")
             controller.control_state()
             logging.debug("Done.")
