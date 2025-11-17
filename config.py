@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from dataclass_wizard import YAMLWizard
 
 
@@ -14,6 +14,12 @@ class ExhaustConfig:
     gpio_pin_id: int
     maximum_co2_ppm: int
     zero_energy_band: int
+    """
+    What percentage of time the exhaust fan should run over the course of
+    an hour, regardless of current CO2 levels.
+    Number should be between 0 and 1, 1 being "always on no matter what"
+    """
+    minimum_run_percentage: float = 0.0
 
 
 @dataclass
@@ -29,7 +35,7 @@ class SensorConfig:
 class GreenhouseConfig(YAMLWizard):
     humidifier: HumidifierConfig
     exhaust: ExhaustConfig
-    scd41: SensorConfig = SensorConfig()
-    aht20: SensorConfig = SensorConfig()
+    scd41: SensorConfig = field(default_factory=SensorConfig)
+    aht20: SensorConfig = field(default_factory=SensorConfig)
     update_interval_seconds: float = 10.0
     metrics_server_port: int = 9100

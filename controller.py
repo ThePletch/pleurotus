@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import importlib.util
 try:
-    # necessary to be able to do development on
+    # necessary to be able to do development on anything other than a raspi
     importlib.util.find_spec('RPi.GPIO')
     import RPi.GPIO as GPIO
 except ImportError:
@@ -10,6 +10,7 @@ from typing import Literal
 
 from controller_types import (
     DeviceController,
+    MinimumPercentageController,
     MonodirectionalController,
     AHTMonitor,
     SCDMonitor,
@@ -34,7 +35,7 @@ class HumidityController(MonodirectionalController, DeviceController, SCDMonitor
 
 
 @dataclass
-class CO2Controller(MonodirectionalController, DeviceController, SCDMonitor):
+class CO2Controller(MinimumPercentageController, MonodirectionalController, DeviceController, SCDMonitor):
     target_reading: Literal['co2_ppm'] = 'co2_ppm'
     measure_name = "co2"
     device_name = "exhaust_fan"

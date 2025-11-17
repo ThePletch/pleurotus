@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod, abstractproperty
 from dataclasses import dataclass, field
 import logging
+from time import time
 from typing import Literal, Protocol, TypedDict
 
 from metrics import (
@@ -32,10 +33,15 @@ class Monitor(ABC):
 
     def read_value(self) -> float:
         current_value = self.reader()
-        MEASURE_VALUE.labels(measure=self.measure_name).set(current_value)
-        logging.info(f"{self.measure_name}: {current_value}")
+
+        self._report_value(current_value)
 
         return current_value
+
+    def _report_value(self, value: float) -> None:
+        MEASURE_VALUE.labels(measure=self.measure_name).set(value)
+
+        logging.info(f"{self.measure_name}: {value}")
 
 
 class Controller(Monitor, ABC):
@@ -69,16 +75,82 @@ class Controller(Monitor, ABC):
         except IOError:
             logging.warning(f"Failed to read a new measure value for {self.measure_name}, remaining in current state")
             return
+
         target_state = self.should_be_active(current_value)
-        DEVICE_ACTIVE.labels(
-            device=self.device_name,
-            measure=self.measure_name,
-        ).set(1 if target_state else 0)
-        logging.debug(f"{self.device_name}: {target_state}")
+
+        self._report_state(target_state)
+
         if self.active != target_state:
             logging.debug(f"Switching {self.measure_name} controller to {'active' if target_state else 'inactive'}")
             self.toggle(target_state)
-            self.active = target_state
+
+        self.active = target_state
+
+    def _report_state(self, target_state: bool) -> None:
+        DEVICE_ACTIVE.labels(
+            device=self.device_name,
+            measure=self.measure_name,
+        ).set(int(target_state))
+
+        logging.debug(f"{self.device_name}: {target_state}")
+
+
+class MinimumPercentageControllerConfig(TypedDict):
+    minimum_run_percentage: float
+
+
+@dataclass
+class MinimumPercentageController(Controller):
+    config: MinimumPercentageControllerConfig
+
+    """
+    Seconds over which the controller has operated
+    """
+    time_measured: float = field(init=False, default=0.0)
+    """
+    Seconds where the controller's device has been enabled.
+    """
+    time_running: float = field(init=False, default=0.0)
+    last_state_change_time: float = field(init=False)
+
+    def __post_init__(self):
+        # make sure we call any parent post_inits, but it's fine
+        # if there isn't one
+        try:
+            super().__post_init__()
+        except AttributeError:
+            pass
+
+        self.last_state_change_time = time()
+
+    def toggle(self, state):
+        super().toggle(state)
+
+        self.time_running = self._total_time_running()
+        self.time_measured = self._total_time_measured()
+
+    def should_be_active(self, value):
+        if super().should_be_active(value):
+            return True
+
+        return not self._ratio_satisfied()
+
+    def _time_in_current_state(self) -> float:
+        return time() - self.last_state_change_time
+
+    def _total_time_measured(self) -> float:
+        return self.time_measured + self._time_in_current_state()
+
+    def _total_time_running(self) -> float:
+        ongoing_time_running = self._time_in_current_state() if self.active else 0.0
+
+        return self.time_running + ongoing_time_running
+
+    def _current_run_ratio(self) -> float:
+        return self._total_time_running() / self._total_time_measured()
+
+    def _ratio_satisfied(self) -> bool:
+        return self._current_run_ratio() > self.config['minimum_run_percentage']
 
 
 class MonodirectionalControllerConfig(TypedDict):

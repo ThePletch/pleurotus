@@ -1,9 +1,22 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 import logging
 import time
 from typing import Generic, Literal, Protocol, TypedDict, TypeVar
+try:
+    import board
+except NotImplementedError:
+    import os
+    if os.environ['HARDCODED_BOARD_PINS'] != 'true':
+        logging.fatal(
+            "Could not import dynamic pin settings. "
+            "To use hardcoded settings, set HARDCODED_BOARD_PINS env to true"
+        )
+        raise
 
-import board
+    logging.warning("Using hardcoded board pins.")
+    import test.hardcoded_board as board
+
 import busio
 from adafruit_ahtx0 import AHTx0
 from adafruit_scd4x import SCD4X
@@ -17,10 +30,11 @@ class HardwareSensor(Protocol[SensorReading]):
     def get_reading(self) -> SensorReading: ...
 
 
+@dataclass
 class Sensor(Generic[SensorReading], ABC):
-    config: SensorConfig
-    current_reading: SensorReading
-    has_reading: bool
+    config: SensorConfig = field(default_factory=SensorConfig)
+    current_reading: SensorReading = field(init=False)
+    has_reading: bool = field(init=False, default=False)
 
     @abstractmethod
     def _build_sensor(self) -> HardwareSensor[SensorReading]: ...
@@ -28,9 +42,7 @@ class Sensor(Generic[SensorReading], ABC):
     @abstractmethod
     def reading_from_sensor(self) -> SensorReading: ...
 
-    def __init__(self, config: SensorConfig):
-        self.config = config
-        self.has_reading = False
+    def __post_init__(self):
         self._sensor = self._build_sensor()
 
     def get_current_reading(self) -> SensorReading:
